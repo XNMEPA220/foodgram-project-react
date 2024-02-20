@@ -17,8 +17,12 @@ class Tag(models.Model):
     
 
 class Ingredient(models.Model):
-    name = models.CharField('Название')
-    measurement_unit = models.CharField('Мера измерения')
+    name = models.CharField('Название', max_length=200)
+    measurement_unit = models.CharField('Мера измерения', max_length=200)
+
+    class Meta:
+        verbose_name = 'Ингредиенты'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
         return self.name
@@ -26,7 +30,7 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField('Название', max_length=200)
-    image = models.CharField('Ссылка на картинку на сайте')
+    image = models.CharField('Ссылка на картинку на сайте', max_length=1)
     text = models.TextField('Описание')
     cooking_time = models.PositiveIntegerField('Время приготовления в минутах')
     tags = models.ManyToManyField(
@@ -47,6 +51,10 @@ class Recipe(models.Model):
     ) 
     is_favorited = models.BooleanField('Находится ли в избранном')
     is_in_shopping_cart = models.BooleanField('Находится ли в корзине')
+
+    class Meta:
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return self.name
