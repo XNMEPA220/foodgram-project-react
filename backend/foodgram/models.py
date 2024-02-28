@@ -53,8 +53,6 @@ class Recipe(models.Model):
         related_name='ingredients',
         verbose_name='Ингридиенты'
     )
-    is_favorited = models.BooleanField('Находится ли в избранном')
-    is_in_shopping_cart = models.BooleanField('Находится ли в корзине')
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:

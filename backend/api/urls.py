@@ -2,7 +2,7 @@ from django.urls import include, path
 
 from rest_framework import routers
 
-from .views import TagViewSet, RecipeViewSet, IngredientViewSet
+from .views import TagViewSet, RecipeViewSet, IngredientViewSet, MyUserViewSet
 
 app_name = 'api'
 
@@ -23,7 +23,14 @@ router_number1.register(
     RecipeViewSet,
     basename='recipes'
 )
+router_number1.register(
+    'users',
+    MyUserViewSet,
+    basename='users'
+)
 
 urlpatterns = [
-    path('v1/', include(router_number1.urls)),
+    path('', include(router_number1.urls)),
+    path('', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
 ]

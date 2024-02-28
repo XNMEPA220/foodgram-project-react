@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from pathlib import Path
 
@@ -30,6 +31,9 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',
     'foodgram.apps.FoodgramConfig',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
 
 ]
 
@@ -122,3 +126,29 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+DJOSER = {
+    'LOGIN_FIELD': 'username',
+    'HIDE_USERS': False,
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': False,
+    'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
+    'SERIALIZERS': {
+        'user': 'api.serializers.MyUserSerializer',
+        'user_create': 'api.serializers.MyUserSerializer',
+        'current_user': 'api.serializers.MyUserSerializer',
+    },
+    'PERMISSIONS': {
+        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user_list': ['rest_framework.permissions.AllowAny']
+    },
+}
