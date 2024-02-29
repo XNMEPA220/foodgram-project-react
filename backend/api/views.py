@@ -20,12 +20,12 @@ class MyUserViewSet(UserViewSet):
 
     @action(detail=False)
     def subscriptions(self, request):
-        queryset = User.objects.filter(follow__user=self.request.user)
+        queryset = User.objects.filter(following__user=self.request.user)
         if queryset:
-            return FollowSerializer
+            return Response(FollowSerializer(queryset, many=True, context={'request': request}).data)
         return Response('Подписки отсутстуют', status=status.HTTP_400_BAD_REQUEST)
-    
-    @action(methods=('post', 'delete'))
+
+    @action(methods=('post', 'delete'), detail=True)
     def subscribe(self, request, id):
         user = request.user
         following = get_object_or_404(User, id=id)
@@ -38,7 +38,7 @@ class MyUserViewSet(UserViewSet):
             subscibe = Follow.objects.create(user=user, following=following)
             subscibe.save()
             return Response(f'Вы подписались на пользователя {follow}', status=status.HTTP_201_CREATED)
-        
+
         if request.method == 'DELETE':
             if follow.exists():
                 follow.delete()
@@ -59,13 +59,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return RecipeSerializer
-        elif self.action in ('create', 'partial_update'):
+        elif self.action in ('create', 'partial_update', 'update'):
             return RecipeCreateSerializer
 
-    @action(methods=('post', 'delete'))
+    @action(methods=('post', 'delete'), detail=True)
     def favorite(self, request, pk):
         user = request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
+        recipe = get_object_or_404(Recipe, id=pk)
         if request.method == 'POST':
             if Favorites.objects.filter(user=user, recipe=recipe).exists():
                 return Response('Рецепт уже был добавлен в избранное', status=status.HTTP_400_BAD_REQUEST)
@@ -73,10 +73,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = FavoriteSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(methods=('post', 'delete'))
+    @action(methods=('post', 'delete'), detail=True)
     def shopping_cart(self, request, pk):
         user = request.user
-        recipe = get_object_or_404
+        recipe = get_object_or_404(Recipe, id=pk)
         if request.method == 'POST':
             if Shopping_cart.objects.filter(user=user, recipe=recipe).exists():
                 return Response('Рецепт уже был добавлен в список покупок', status=status.HTTP_400_BAD_REQUEST)
