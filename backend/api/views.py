@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from foodgram.models import Tag, Ingredient, Recipe, Favorites, Follow, Shopping_cart
+from .paginator import MyPagination
 from users.models import User
 from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer, RecipeCreateSerializer, MyUserSerializer, FavoriteSerializer, FollowSerializer
 
@@ -17,12 +18,15 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class MyUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = MyUserSerializer
+    pagination_class = MyPagination
 
     @action(detail=False)
     def subscriptions(self, request):
         queryset = User.objects.filter(following__user=self.request.user)
         if queryset:
-            return Response(FollowSerializer(queryset, many=True, context={'request': request}).data)
+            pages = self.paginate_queryset(queryset)
+            seralizer = FollowSerializer(pages, many=True, context={'request': request})
+            return self.get_paginated_response(seralizer.data)
         return Response('Подписки отсутстуют', status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=('post', 'delete'), detail=True)
@@ -55,6 +59,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    pagination_class = MyPagination
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
