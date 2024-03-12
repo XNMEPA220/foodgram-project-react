@@ -1,6 +1,9 @@
 from django.db import models
+from django.core.validators import MinValueValidator
+from django.contrib.auth import get_user_model
+# from users.models import User
 
-from users.models import User
+User = get_user_model()
 
 
 class Tag(models.Model):
@@ -35,7 +38,12 @@ class Recipe(models.Model):
         upload_to='foodgram/media'
     )
     text = models.TextField('Описание')
-    cooking_time = models.PositiveIntegerField('Время приготовления в минутах')
+    cooking_time = models.PositiveIntegerField(
+        'Время приготовления в минутах',
+        validators=[
+            MinValueValidator(1, message='Минимальное значение 1!'),
+        ]
+    )
     tags = models.ManyToManyField(
         Tag,
         related_name='tags',
@@ -54,6 +62,8 @@ class Recipe(models.Model):
         verbose_name='Ингридиенты'
     )
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
+    is_favorited = models.BooleanField('Избранное', blank=True, default=False)
+    is_in_shopping_cart = models.BooleanField('Список покупок', blank=True, default=False)
 
     class Meta:
         ordering = ('-pub_date',)
@@ -120,7 +130,7 @@ class Favorites(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='recipes'
+        related_name='furecipes'
     )
 
     class Meta:

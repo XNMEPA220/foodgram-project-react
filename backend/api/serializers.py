@@ -1,10 +1,10 @@
-from rest_framework import serializers
 import base64
+
 from django.core.files.base import ContentFile
-
-
-from foodgram.models import Tag, Ingredient, Recipe, RecipeIngredient, Favorites, Shopping_cart, Follow
 from djoser.serializers import UserCreateSerializer
+from foodgram.models import (Favorites, Follow, Ingredient, Recipe,
+                             RecipeIngredient, Shopping_cart, Tag)
+from rest_framework import serializers
 from users.models import User
 
 
@@ -23,7 +23,10 @@ class MyUserSerializer(UserCreateSerializer):
         )
 
     def get_is_subscribed(self, obj):
+        print(f'Контекст1: {self.context}')
+        print(f'Контекст2: {self.context.get("request")}')
         user = self.context.get('request').user
+        print(f'Контекст: {self.context.get("request")}')
         if user.is_anonymous:
             return False
         return Follow.objects.filter(user=user, following=obj.id).exists()
@@ -138,10 +141,40 @@ class RecipeCreateSerializer(RecipeSerializer):
     image = Base64ImageField()
     ingredients = CreateIngredientInRecipeSerializer(many=True)
 
-    def validate_ingredients(self, value):
+    def validate(self, data):
+        if data.get('ingredients') is None:
+            raise serializers.ValidationError('Поле ингридиентов должно быть заполнено')
+        if data.get('tags') is None:
+            raise serializers.ValidationError('Поле тегов должно быть заполнено')
+        return data
+
+    def validate_tags(self, value):
+        tags_list = []
         if len(value) < 1:
-            raise serializers.ValidationError('Нужно добавить хотя бы один ингредиент')
+            raise serializers.ValidationError('Нужно добавить хотя бы один тег')
+        
+        for tag in value:
+            if tag in tags_list:
+                raise serializers.ValidationError(
+                    'Теги должны быть уникальными!'
+                )
+            tags_list.append(tag)
+        
         return value
+
+    def validate_ingredients(self, data):
+        ingredients = self.initial_data.get('ingredients')
+        lst_ingredient = []
+
+        for ingredient in ingredients:
+            if ingredient['id'] in lst_ingredient:
+                raise serializers.ValidationError(
+                    'Ингредиенты должны быть уникальными!'
+                )
+            lst_ingredient.append(ingredient['id'])
+        if len(lst_ingredient) < 1:
+            raise serializers.ValidationError('Нужно добавить хотя бы один ингредиент')
+        return data
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -162,7 +195,7 @@ class RecipeCreateSerializer(RecipeSerializer):
         recipe.tags.set(tags)
         return recipe
 
-    def update(self, validated_data, instance):
+    def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)
         if ingredients is not None:
@@ -217,7 +250,19 @@ class FavoriteSerializer(serializers.ModelSerializer):
         )
 
 
-class FollowSerializer(serializers.ModelSerializer):
+class RecipeForFollowSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        )
+
+
+class FollowSerializer(MyUserSerializer):
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField(read_only=True)
 
@@ -236,11 +281,16 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        recipes = obj.recipes.all()
+        recipes = obj.author.all()
         recipes_limit = request.query_params.get('recipes_limit')
         if recipes_limit:
             recipes = recipes[:int(recipes_limit)]
-        return RecipeSerializer(queryser=recipes, many=True).data
+        return RecipeForFollowSerializer(recipes, many=True).data
 
-    def get_recipes_limit(obj):
-        return obj.recipes.count()
+    def get_recipes_count(self, obj):
+        request = self.context.get('request')
+        recipes = obj.author.all()
+        recipes_limit = request.query_params.get('recipes_limit')
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
+        return recipes.count()
