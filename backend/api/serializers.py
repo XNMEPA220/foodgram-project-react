@@ -143,23 +143,28 @@ class RecipeCreateSerializer(RecipeSerializer):
 
     def validate(self, data):
         if data.get('ingredients') is None:
-            raise serializers.ValidationError('Поле ингридиентов должно быть заполнено')
+            raise serializers.ValidationError(
+                'Поле ингридиентов должно быть заполнено'
+            )
         if data.get('tags') is None:
-            raise serializers.ValidationError('Поле тегов должно быть заполнено')
+            raise serializers.ValidationError(
+                'Поле тегов должно быть заполнено'
+            )
         return data
 
     def validate_tags(self, value):
         tags_list = []
         if len(value) < 1:
-            raise serializers.ValidationError('Нужно добавить хотя бы один тег')
-        
+            raise serializers.ValidationError(
+                'Нужно добавить хотя бы один тег'
+            )
+
         for tag in value:
             if tag in tags_list:
                 raise serializers.ValidationError(
                     'Теги должны быть уникальными!'
                 )
             tags_list.append(tag)
-        
         return value
 
     def validate_ingredients(self, data):
@@ -173,13 +178,17 @@ class RecipeCreateSerializer(RecipeSerializer):
                 )
             lst_ingredient.append(ingredient['id'])
         if len(lst_ingredient) < 1:
-            raise serializers.ValidationError('Нужно добавить хотя бы один ингредиент')
+            raise serializers.ValidationError(
+                'Нужно добавить хотя бы один ингредиент'
+            )
         return data
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data, author=self.context.get('request').user)
+        recipe = Recipe.objects.create(
+            **validated_data, author=self.context.get('request').user
+        )
 
         create_ingredients = [
             RecipeIngredient(

@@ -1,7 +1,6 @@
-from django.db import models
-from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
-# from users.models import User
+from django.core.validators import MinValueValidator
+from django.db import models
 
 User = get_user_model()
 
@@ -63,7 +62,11 @@ class Recipe(models.Model):
     )
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
     is_favorited = models.BooleanField('Избранное', blank=True, default=False)
-    is_in_shopping_cart = models.BooleanField('Список покупок', blank=True, default=False)
+    is_in_shopping_cart = models.BooleanField(
+        'Список покупок',
+        blank=True,
+        default=False
+    )
 
     class Meta:
         ordering = ('-pub_date',)

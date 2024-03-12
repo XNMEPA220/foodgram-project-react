@@ -1,22 +1,35 @@
-from rest_framework import viewsets, status, permissions, filters
-from djoser.views import UserViewSet
-from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from django_filters.rest_framework import DjangoFilterBackend
-
-from foodgram.models import Tag, Ingredient, Recipe, Favorites, Follow, Shopping_cart, RecipeIngredient
-from .paginator import MyPagination
-from users.models import User
-from .permission import AuthorOrReadOnly
-from .filter import RecipeFilter
-from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer, RecipeCreateSerializer, MyUserSerializer, FavoriteSerializer, FollowSerializer
 import io
-from django.http import FileResponse
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
+
 from django.db.models import Sum
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
+from foodgram.models import (
+    Favorites,
+    Follow,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    Shopping_cart,
+    Tag
+)
+from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from users.models import User
+
+from .filter import RecipeFilter
+from .paginator import MyPagination
+from .permission import AuthorOrReadOnly
+from .serializers import (FavoriteSerializer, FollowSerializer,
+                          IngredientSerializer, MyUserSerializer,
+                          RecipeCreateSerializer, RecipeSerializer,
+                          TagSerializer)
+
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
@@ -38,9 +51,16 @@ class MyUserViewSet(UserViewSet):
         queryset = User.objects.filter(following__user=self.request.user)
         if queryset:
             pages = self.paginate_queryset(queryset)
-            seralizer = FollowSerializer(pages, many=True, context={'request': request})
+            seralizer = FollowSerializer(
+                pages,
+                many=True,
+                context={'request': request}
+            )
             return self.get_paginated_response(seralizer.data)
-        return Response('Подписки отсутстуют', status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            'Подписки отсутстуют',
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
             methods=('post', 'delete'),
@@ -53,21 +73,37 @@ class MyUserViewSet(UserViewSet):
         follow = Follow.objects.filter(user=user, following=following)
         if request.method == 'POST':
             if user == following:
-                return Response('Нельзя подписаться на самого себя', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    'Нельзя подписаться на самого себя',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             if follow.exists():
-                return Response('Вы уже подписаны на него', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    'Вы уже подписаны на него',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             subscibe = Follow.objects.create(user=user, following=following)
             subscibe.save()
             queryset = User.objects.filter(following__user=self.request.user)
             pages = self.paginate_queryset(queryset)
-            seralizer = FollowSerializer(pages, many=True, context={'request': request})
+            seralizer = FollowSerializer(
+                pages,
+                many=True,
+                context={'request': request}
+            )
             return Response(seralizer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
             if follow.exists():
                 follow.delete()
-                return Response(f'Вы отписались от {following}', status=status.HTTP_204_NO_CONTENT)
-            return Response(f'Вы не были подписаны на этого пользователя', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    f'Вы отписались от {following}',
+                    status=status.HTTP_204_NO_CONTENT
+                )
+            return Response(
+                'Вы не были подписаны на этого пользователя',
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(
         detail=False,
@@ -111,10 +147,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             try:
                 recipe = Recipe.objects.get(id=pk)
             except Recipe.DoesNotExist:
-                return Response('Рецепт не найден', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    'Рецепт не найден',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             favorite = Favorites.objects.filter(user=user, recipe=recipe)
             if favorite.exists():
-                return Response('Рецепт уже был добавлен в избранное', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    'Рецепт уже был добавлен в избранное',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             Favorites.objects.create(user=user, recipe=recipe)
             serializer = FavoriteSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -123,8 +165,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             favorite = Favorites.objects.filter(user=user, recipe=recipe)
             if favorite.exists():
                 favorite.delete()
-                return Response(f'Рецепт удален из избранного', status=status.HTTP_204_NO_CONTENT)
-            return Response(f'Данный рецепт не был добавлен в избранное', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    'Рецепт удален из избранного',
+                    status=status.HTTP_204_NO_CONTENT
+                )
+            return Response(
+                'Данный рецепт не был добавлен в избранное',
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @action(
             methods=('post', 'delete'),
@@ -137,10 +185,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
             try:
                 recipe = Recipe.objects.get(id=pk)
             except Recipe.DoesNotExist:
-                return Response('Рецепт не найден', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    'Рецепт не найден',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             if Shopping_cart.objects.filter(user=user, recipe=recipe).exists():
-                return Response('Рецепт уже был добавлен в список покупок', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    'Рецепт уже был добавлен в список покупок',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             Shopping_cart.objects.create(user=user, recipe=recipe)
             serializer = FavoriteSerializer(recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -155,6 +209,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'Рецепт не находится в списке покупок',
                 status=status.HTTP_400_BAD_REQUEST
             )
+
     @action(
         detail=False,
         permission_classes=(permissions.IsAuthenticated,)
@@ -177,15 +232,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         for item in ingredients:
             pfile.drawString(
                 100, y,
-                f'{item["ingredient__name"]} ({item["ingredient__measurement_unit"]}) - '
+                f'{item["ingredient__name"]}'
+                f'({item["ingredient__measurement_unit"]}) - '
                 f'{item["sum"]}'
             )
             y -= 20
-        
+
         pfile.showPage()
         pfile.save()
         buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename='shopping_cart.pdf')
-
-
-
+        return FileResponse(
+            buffer,
+            as_attachment=True,
+            filename='shopping_cart.pdf'
+        )
