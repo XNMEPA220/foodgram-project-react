@@ -1,14 +1,8 @@
-FROM node:8
+# build env
+FROM node:8 as build
 WORKDIR /app
-
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-
+COPY package*.json ./
 RUN npm install
-RUN npm ci
-
-COPY . .
+COPY . ./
 RUN npm run build
-RUN npm install --global http-server
-
-CMD ["npx", "-y", "http-server", "-p", "8000", "/app/build"]
+CMD cp -r build result_build
