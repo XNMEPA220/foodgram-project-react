@@ -43,10 +43,7 @@ class MyUserViewSet(UserViewSet):
     pagination_class = MyPagination
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
-    @action(
-            detail=False,
-            permission_classes=(permissions.IsAuthenticated,)
-        )
+    @action(detail=False, permission_classes=(permissions.IsAuthenticated,))
     def subscriptions(self, request):
         queryset = User.objects.filter(following__user=self.request.user)
         if queryset:
@@ -63,10 +60,10 @@ class MyUserViewSet(UserViewSet):
         )
 
     @action(
-            methods=('post', 'delete'),
-            detail=True,
-            permission_classes=(permissions.IsAuthenticated,)
-        )
+        methods=('post', 'delete'),
+        detail=True,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
     def subscribe(self, request, id):
         user = request.user
         following = get_object_or_404(User, id=id)
@@ -137,10 +134,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeCreateSerializer
 
     @action(
-            methods=('post', 'delete'),
-            detail=True,
-            permission_classes=(permissions.IsAuthenticated,)
-        )
+        methods=('post', 'delete'),
+        detail=True,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
     def favorite(self, request, pk):
         user = request.user
         if request.method == 'POST':
@@ -175,10 +172,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
 
     @action(
-            methods=('post', 'delete'),
-            detail=True,
-            permission_classes=(permissions.IsAuthenticated,)
-        )
+        methods=('post', 'delete'),
+        detail=True,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
     def shopping_cart(self, request, pk):
         user = request.user
         if request.method == 'POST':
