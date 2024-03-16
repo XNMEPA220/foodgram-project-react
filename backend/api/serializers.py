@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer
 from foodgram.models import (Favorites, Follow, Ingredient, Recipe,
                              RecipeIngredient, Shopping_cart, Tag)
-from rest_framework import serializers
+from rest_framework import serializers, validators
 from users.models import User
 
 
@@ -22,11 +22,17 @@ class MyUserSerializer(UserCreateSerializer):
             'is_subscribed'
         )
 
+    def validate_username(self, value):
+        try:
+            User.objects.get(username=value)
+        except User.DoesNotExist:
+            return value
+        raise serializers.ValidationError(
+            {'username': 'Пользователь с таким именем уже существует'}
+        )
+
     def get_is_subscribed(self, obj):
-        print(f'Контекст1: {self.context}')
-        print(f'Контекст2: {self.context.get("request")}')
         user = self.context.get('request').user
-        print(f'Контекст: {self.context.get("request")}')
         if user.is_anonymous:
             return False
         return Follow.objects.filter(user=user, following=obj.id).exists()
@@ -46,6 +52,13 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = '__all__'
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=Tag.objects.all(),
+                fields=('name', 'measurement_unit'),
+                message='Тэг с таким названием уже существует'
+            )
+        ]
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -75,6 +88,13 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
             'amount',
             'measurement_unit'
         )
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=RecipeIngredient.objects.all(),
+                fields=('ingredient', 'amount'),
+                message='Ингредиент с таким названием уже добавлен в рецепт'
+            )
+        ]
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -141,16 +161,16 @@ class RecipeCreateSerializer(RecipeSerializer):
     image = Base64ImageField()
     ingredients = CreateIngredientInRecipeSerializer(many=True)
 
-    def validate(self, data):
-        if data.get('ingredients') is None:
+    def validate(self, value):
+        if value.get('ingredients') is None:
             raise serializers.ValidationError(
                 'Поле ингридиентов должно быть заполнено'
             )
-        if data.get('tags') is None:
+        if value.get('tags') is None:
             raise serializers.ValidationError(
                 'Поле тегов должно быть заполнено'
             )
-        return data
+        return value
 
     def validate_tags(self, value):
         tags_list = []
@@ -167,7 +187,7 @@ class RecipeCreateSerializer(RecipeSerializer):
             tags_list.append(tag)
         return value
 
-    def validate_ingredients(self, data):
+    def validate_ingredients(self, value):
         ingredients = self.initial_data.get('ingredients')
         lst_ingredient = []
 
@@ -181,7 +201,7 @@ class RecipeCreateSerializer(RecipeSerializer):
             raise serializers.ValidationError(
                 'Нужно добавить хотя бы один ингредиент'
             )
-        return data
+        return value
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -303,3 +323,31 @@ class FollowSerializer(MyUserSerializer):
         if recipes_limit:
             recipes = recipes[:int(recipes_limit)]
         return recipes.count()
+
+
+class FollowCreateSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    following = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    class Meta:
+        model = Follow
+        fields = (
+            'user',
+            'following'
+        )
+
+    def validate(self, data):
+        if data.get('user') == data.get('following'):
+            print(f' Дата {data.get("user")}')
+            raise serializers.ValidationError(
+                'Нельзя подписаться на самого себя'
+            )
+
+        if Follow.objects.filter(
+            user=data.get('user'),
+            following=data.get('following')
+        ).exists():
+            raise serializers.ValidationError(
+                'Вы уже подписаны на этот пользователь'
+            )
+        return data

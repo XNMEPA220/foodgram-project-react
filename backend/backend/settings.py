@@ -1,5 +1,4 @@
 import os
-
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -10,7 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'secret')
 
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+# DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+DEBUG = True
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'django_filters',
+    'colorfield',
 
 ]
 
@@ -64,14 +65,22 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("POSTGRES_DB", "django"),
-        'USER': os.getenv("POSTGRES_USER", "django"),
-        'PASSWORD': os.getenv("POSTGRES_PASSWORD", ""),
-        'HOST': os.getenv("DB_HOST", ""),
-        'PORT': os.getenv("DB_PORT", 5432)
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv("POSTGRES_DB", "django"),
+#         'USER': os.getenv("POSTGRES_USER", "django"),
+#         'PASSWORD': os.getenv("POSTGRES_PASSWORD", ""),
+#         'HOST': os.getenv("DB_HOST", ""),
+#         'PORT': os.getenv("DB_PORT", 5432)
+#     }
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -116,7 +125,9 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ]
+    ],
+
+    'SEARCH_PARAM':'name'
 }
 
 DJOSER = {

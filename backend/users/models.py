@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from backend.constants import USER_MODEL_MAX_LENGTH
+
 
 class User(AbstractUser):
     email = models.EmailField(
@@ -8,11 +10,11 @@ class User(AbstractUser):
         unique=True
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=USER_MODEL_MAX_LENGTH,
         verbose_name='Имя'
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=USER_MODEL_MAX_LENGTH,
         verbose_name='Фамилия'
     )
 
@@ -22,7 +24,13 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('id',)
+        ordering = ('username',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username'],
+                name='unique_username'
+            )
+        ]
 
     def __str__(self):
         return self.username
