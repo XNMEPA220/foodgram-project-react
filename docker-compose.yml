@@ -12,7 +12,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
   backend:
-    image: xnmepa220/foodgram_backend
+    image: uniqlow19/foodgram_frontend
     env_file: .env
     volumes:
       - static:/backend_static
