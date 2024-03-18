@@ -16,7 +16,8 @@ services:
     env_file: .env
     volumes:
       - static:/backend_static
-      - media:/backend_media
+      # - media:/backend_media
+      - media:/media/
   frontend:
     image: uniqlow19/foodgram_frontend
     env_file: .env
