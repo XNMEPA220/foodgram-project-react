@@ -17,7 +17,9 @@ services:
     volumes:
       - static:/backend_static
       # - media:/backend_media
-      - media:/media/
+      - media:/app/media/
+    depends_on:
+      - db
   frontend:
     image: uniqlow19/foodgram_frontend
     env_file: .env
@@ -32,3 +34,5 @@ services:
       - media:/media/
     ports:
       - 8000:80
+    depends_on:
+      - backend
