@@ -2,9 +2,10 @@ import base64
 
 from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer
+from rest_framework import serializers, validators
+
 from foodgram.models import (Favorites, Follow, Ingredient, Recipe,
                              RecipeIngredient, Shopping_cart, Tag)
-from rest_framework import serializers, validators
 from users.models import User
 
 

@@ -127,7 +127,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 
-    'SEARCH_PARAM':'name'
+    'SEARCH_PARAM': 'name'
 }
 
 DJOSER = {

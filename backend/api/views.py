@@ -13,8 +13,8 @@ from reportlab.pdfgen import canvas
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from users.models import User
 
+from users.models import User
 from .filter import RecipeFilter
 from .paginator import MyPagination
 from .permission import AuthorOrReadOnly

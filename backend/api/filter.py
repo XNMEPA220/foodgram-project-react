@@ -1,5 +1,6 @@
 import django_filters
 from django_filters import rest_framework as filters
+
 from foodgram.models import Recipe
 
 
@@ -20,7 +21,9 @@ class RecipeFilter(filters.FilterSet):
         if value == 1:
             user = self.request.user
             return queryset.filter(shopping_cart_recipe__user_id=user.id)
-        return queryset.exclude(shopping_cart_recipe__user_id=self.request.user.id)
+        return queryset.exclude(
+            shopping_cart_recipe__user_id=self.request.user.id
+        )
 
     class Meta:
         model = Recipe
