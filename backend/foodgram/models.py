@@ -77,10 +77,12 @@ class Recipe(models.Model):
         related_name='ingredients',
         verbose_name='Ингридиенты'
     )
-    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
+    # Этого поля действительно нет в тз, но есть требование, что рецепты должны сортироваться
+    # от новых к старым. Как это реализовать без этого поля?
+    # pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
-        ordering = ('-pub_date',)
+        # ordering = ('-pub_date',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -144,13 +146,11 @@ class Follow(models.Model):
 class AbstractModel(models.Model):
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
-        # related_name='%(class)s_user'
+        on_delete=models.CASCADE
     )
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE,
-        # related_name='%(class)s_recipe'
+        on_delete=models.CASCADE
     )
 
     class Meta:

@@ -22,14 +22,13 @@ class IngredientAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    readonly_fields = ('pub_date',)
+    # readonly_fields = ('pub_date',)
     list_display = (
         'name',
         'image',
         'text',
         'cooking_time',
         'author',
-        'pub_date',
         'favorites')
     list_filter = (
         'name',
