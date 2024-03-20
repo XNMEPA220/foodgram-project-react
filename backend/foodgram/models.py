@@ -145,16 +145,17 @@ class AbstractModel(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='%(class)s_user'
+        # related_name='%(class)s_user'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='%(class)s_recipe'
+        # related_name='%(class)s_recipe'
     )
 
     class Meta:
         abstract = True
+        default_related_name = 'abstract'
 
 
 class Favorites(AbstractModel):

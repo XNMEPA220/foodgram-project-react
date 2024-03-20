@@ -1,10 +1,18 @@
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
 from backend.constants import USER_MODEL_MAX_LENGTH
 
 
 class User(AbstractUser):
+
+    username = models.CharField(
+        'Логин',
+        max_length=USER_MODEL_MAX_LENGTH,
+        unique=True,
+        validators=[UnicodeUsernameValidator()]
+    )
     email = models.EmailField(
         'Электронная почта',
         unique=True

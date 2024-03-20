@@ -204,13 +204,8 @@ class RecipeCreateSerializer(RecipeSerializer):
             )
         return value
 
-    def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(
-            **validated_data, author=self.context.get('request').user
-        )
-
+    @staticmethod
+    def create_ingredients(recipe, ingredients):
         create_ingredients = [
             RecipeIngredient(
                 recipe=recipe,
@@ -222,25 +217,23 @@ class RecipeCreateSerializer(RecipeSerializer):
 
         RecipeIngredient.objects.bulk_create(create_ingredients)
 
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipe.objects.create(
+            **validated_data, author=self.context.get('request').user
+        )
+        self.create_ingredients(recipe, ingredients)
         recipe.tags.set(tags)
         return recipe
 
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients', None)
         tags = validated_data.pop('tags', None)
-        if ingredients is not None:
+        if ingredients:
             instance.ingredients.clear()
-
-            create_ingredients = [
-                RecipeIngredient(
-                    recipe=instance,
-                    ingredient=ingredient['ingredient'],
-                    amount=ingredient['amount']
-                )
-                for ingredient in ingredients
-            ]
-            RecipeIngredient.objects.bulk_create(create_ingredients)
-        if tags is not None:
+            self.create_ingredients(instance, ingredients)
+        if tags:
             instance.tags.clear()
             instance.tags.set(tags)
         return super().update(instance, validated_data)
@@ -339,7 +332,6 @@ class FollowCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data.get('user') == data.get('following'):
-            print(f' Дата {data.get("user")}')
             raise serializers.ValidationError(
                 'Нельзя подписаться на самого себя'
             )

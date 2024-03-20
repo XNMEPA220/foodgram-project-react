@@ -192,7 +192,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         pfile.setFont('DejaVu', 12)
         pfile.drawString(100, 750, 'Список покупок')
         ingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_cart_recipe__user=request.user
+            recipe__shopping_cart__user=request.user
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'

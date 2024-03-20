@@ -104,3 +104,4 @@ sudo docker compose backend python manage.py createsuperuser
 ### Автор:
 
 Рындин Егор, обучающийся в 29 когорте Яндекс Практикума на программе Python-разработчик плюс
+https://github.com/XNMEPA220

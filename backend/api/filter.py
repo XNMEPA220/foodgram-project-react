@@ -14,15 +14,16 @@ class RecipeFilter(filters.FilterSet):
     def is_recipe_in_favorites_filter(self, queryset, name, value):
         if value == 1:
             user = self.request.user
-            return queryset.filter(favorites_recipe__user_id=user.id)
-        return queryset.exclude(favorites_recipe__user_id=self.request.user.id)
+            return queryset.filter(favorites__user_id=user.id)
+        return queryset.exclude(favorites__user_id=self.request.user.id)
+
 
     def is_recipe_in_shopping_cart_filter(self, queryset, name, value):
         if value == 1:
             user = self.request.user
-            return queryset.filter(shopping_cart_recipe__user_id=user.id)
+            return queryset.filter(shopping_cart__user_id=user.id)
         return queryset.exclude(
-            shopping_cart_recipe__user_id=self.request.user.id
+            shopping_cart__user_id=self.request.user.id
         )
 
     class Meta:
