@@ -17,7 +17,6 @@ class RecipeFilter(filters.FilterSet):
             return queryset.filter(favorites__user_id=user.id)
         return queryset.exclude(favorites__user_id=self.request.user.id)
 
-
     def is_recipe_in_shopping_cart_filter(self, queryset, name, value):
         if value == 1:
             user = self.request.user

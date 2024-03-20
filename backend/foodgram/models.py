@@ -78,7 +78,8 @@ class Recipe(models.Model):
         related_name='ingredients',
         verbose_name='Ингридиенты'
     )
-    # Этого поля действительно нет в тз, но есть требование, что рецепты должны сортироваться
+    # Этого поля действительно нет в тз, но есть требование,
+    # что рецепты должны сортироваться
     # от новых к старым. Как это реализовать без этого поля?
     # pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
@@ -89,6 +90,7 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
     def __dir__(self) -> Iterable[str]:
         return super().__dir__()
 
