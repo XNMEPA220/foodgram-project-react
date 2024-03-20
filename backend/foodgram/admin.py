@@ -41,7 +41,7 @@ class RecipeAdmin(admin.ModelAdmin):
     ]
 
     def favorites(self, obj):
-        return obj.favorites_recipe.count()
+        return obj.favorites.count()
 
 
 class IngredientRecipeInline(admin.TabularInline):
