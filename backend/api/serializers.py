@@ -129,7 +129,18 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        exclude = ('pub_date',)
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'text',
+            'name',
+            'image',
+            'cooking_time'
+        )
 
 
 class Base64ImageField(serializers.ImageField):

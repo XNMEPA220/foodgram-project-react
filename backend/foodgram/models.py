@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from colorfield.fields import ColorField
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
@@ -88,6 +89,8 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+    def __dir__(self) -> Iterable[str]:
+        return super().__dir__()
 
 
 class RecipeIngredient(models.Model):
@@ -155,13 +158,13 @@ class AbstractModel(models.Model):
 
     class Meta:
         abstract = True
-        default_related_name = 'abstract'
 
 
 class Favorites(AbstractModel):
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
+        default_related_name = 'favorites'
 
     def __str__(self):
         return f'Рецепт {self.recipe} в избранном у {self.user}'
@@ -171,6 +174,7 @@ class Shopping_cart(AbstractModel):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        default_related_name = 'shopping_cart'
 
     def __str__(self):
         return (
