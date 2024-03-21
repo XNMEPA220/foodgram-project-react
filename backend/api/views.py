@@ -5,8 +5,6 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from foodgram.models import (Favorites, Follow, Ingredient, Recipe,
-                             RecipeIngredient, Shopping_cart, Tag)
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
@@ -14,6 +12,8 @@ from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from foodgram.models import (Favorites, Follow, Ingredient, Recipe,
+                             RecipeIngredient, Shopping_cart, Tag)
 from users.models import User
 from .filter import RecipeFilter
 from .paginator import MyPagination
@@ -58,10 +58,9 @@ class MyUserViewSet(UserViewSet):
         permission_classes=(permissions.IsAuthenticated,)
     )
     def subscribe(self, request, id):
-        user = request.user
         following = get_object_or_404(User, id=id)
         serializer = FollowCreateSerializer(
-            data={'user': user.id, 'following': following.id}
+            data={'user': self.request.user.id, 'following': following.id}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
