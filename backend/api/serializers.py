@@ -129,18 +129,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = (
-            'id',
-            'tags',
-            'author',
-            'ingredients',
-            'is_favorited',
-            'is_in_shopping_cart',
-            'text',
-            'name',
-            'image',
-            'cooking_time'
-        )
+        exclude = ('pub_date',)
 
 
 class Base64ImageField(serializers.ImageField):
@@ -178,42 +167,85 @@ class RecipeCreateSerializer(RecipeSerializer):
             raise serializers.ValidationError(
                 'Поле ингридиентов должно быть заполнено'
             )
+        if len(value.get('ingredients')) < 1:
+            raise serializers.ValidationError(
+                'Нужно добавить хотя бы один ингредиент'
+            )
+        if len(value.get('ingredients')) != len(set(
+            ingredient['ingredient'] for ingredient in value.get('ingredients')
+        )):
+            raise serializers.ValidationError(
+                'Ингредиенты должны быть уникальными!'
+            )
         if value.get('tags') is None:
             raise serializers.ValidationError(
                 'Поле тегов должно быть заполнено'
             )
-        return value
-
-    def validate_tags(self, value):
-        tags_list = []
-        if len(value) < 1:
+        if len(value.get('tags')) < 1:
             raise serializers.ValidationError(
                 'Нужно добавить хотя бы один тег'
             )
-
-        for tag in value:
-            if tag in tags_list:
-                raise serializers.ValidationError(
-                    'Теги должны быть уникальными!'
-                )
-            tags_list.append(tag)
-        return value
-
-    def validate_ingredients(self, value):
-        ingredients = self.initial_data.get('ingredients')
-        lst_ingredient = []
-
-        for ingredient in ingredients:
-            if ingredient['id'] in lst_ingredient:
-                raise serializers.ValidationError(
-                    'Ингредиенты должны быть уникальными!'
-                )
-            lst_ingredient.append(ingredient['id'])
-        if len(lst_ingredient) < 1:
+        if len(value.get('tags')) != len(set(
+            tag for tag in value.get('tags')
+        )):
             raise serializers.ValidationError(
-                'Нужно добавить хотя бы один ингредиент'
+                'Теги должны быть уникальными!'
             )
         return value
+
+    # def validate_tags(self, value):
+    #     tags_list = []
+    #     if len(value) < 1:
+    #         raise serializers.ValidationError(
+    #             'Нужно добавить хотя бы один тег'
+    #         )
+
+    #     for tag in value:
+    #         if tag in tags_list:
+    #             raise serializers.ValidationError(
+    #                 'Теги должны быть уникальными!'
+    #             )
+    #         tags_list.append(tag)
+    #     return value
+    
+    # def validate_tags(self, value):
+    #     if len(value) < 1:
+    #         raise serializers.ValidationError(
+    #             'Нужно добавить хотя бы один тег'
+    #         )
+    #     if len(value) != len(set(tag for tag in value)):
+    #         raise serializers.ValidationError(
+    #             'Теги должны быть уникальными!'
+    #         )
+    #     return value
+
+    # def validate_ingredients(self, value):
+    #     ingredients = self.initial_data.get('ingredients')
+    #     lst_ingredient = []
+
+    #     for ingredient in ingredients:
+    #         if ingredient['id'] in lst_ingredient:
+    #             raise serializers.ValidationError(
+    #                 'Ингредиенты должны быть уникальными!'
+    #             )
+    #         lst_ingredient.append(ingredient['id'])
+    #     if len(lst_ingredient) < 1:
+    #         raise serializers.ValidationError(
+    #             'Нужно добавить хотя бы один ингредиент'
+    #         )
+    #     return value
+    
+    # def validate_ingredients(self, value):
+    #     if len(value) < 1:
+    #         raise serializers.ValidationError(
+    #             'Нужно добавить хотя бы один тег'
+    #         )
+    #     if len(value) != len(set(ingredient['ingredient'] for ingredient in value)):
+    #         raise serializers.ValidationError(
+    #             'Теги должны быть уникальными!'
+    #         )
+
+    #     return value
 
     @staticmethod
     def create_ingredients(recipe, ingredients):

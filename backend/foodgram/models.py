@@ -70,21 +70,19 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='author',
-        verbose_name='Автор',
+        verbose_name='Автор'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',
         related_name='ingredients',
-        verbose_name='Ингридиенты'
+        verbose_name='Ингридиенты',
+        blank=False,
     )
-    # Этого поля действительно нет в тз, но есть требование,
-    # что рецепты должны сортироваться
-    # от новых к старым. Как это реализовать без этого поля?
-    # pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
+    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
-        # ordering = ('-pub_date',)
+        ordering = ('-pub_date',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
