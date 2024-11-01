@@ -95,13 +95,3 @@ sudo docker compose backend python manage.py createsuperuser
 ```
 /api/recipes/downloan_shopping_cart/
 ```
-
-### Данные для использования:
-
-Сайт http://xnmepa.ddns.net/
-Админ: почта egor@mail.ru пароль egor
-
-### Автор:
-
-Рындин Егор, обучающийся в 29 когорте Яндекс Практикума на программе Python-разработчик плюс
-https://github.com/XNMEPA220
